@@ -20,7 +20,7 @@ class TaskRequest(BaseModel):
 async def run_task(request: TaskRequest):
     try:
         response = client.chat.completions.create(
-            model='gemini-2.0-flash-001',   # Correct model name
+            model='gemini-2.0-flash-001',
             messages=[
                 {'role': 'system', 'content': 'You are Groks Baby — a precise coding assistant.'},
                 {'role': 'user', 'content': request.task}
