@@ -22,19 +22,19 @@ async def run_task(request: TaskRequest):
         response = client.chat.completions.create(
             model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
             messages=[
-                {'role': 'system', 'content': 'You are Groks Baby — precise coding agent. Respond with git-style diff for code changes.'},
+                {'role': 'system', 'content': 'You are Groks Baby — a precise and truthful coding assistant.'},
                 {'role': 'user', 'content': request.task}
             ],
             temperature=0.3,
             max_tokens=2000
         )
-        return {'status': 'success', 'diff': response.choices[0].message.content.strip()}
+        return {'status': 'success', 'response': response.choices[0].message.content.strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get('/health')
 async def health():
-    return {'status': 'healthy', 'agent': 'Groks Baby'}
+    return {'status': 'healthy', 'name': 'Groks Baby'}
 
 if __name__ == '__main__':
     import uvicorn
