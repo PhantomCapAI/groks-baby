@@ -9,8 +9,8 @@ load_dotenv()
 app = FastAPI(title="Groks Baby")
 
 client = OpenAI(
-    api_key=os.getenv('GROQ_API_KEY'),
-    base_url='https://api.groq.com/openai/v1'
+    api_key=os.getenv('GEMINI_API_KEY'),
+    base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
 )
 
 class TaskRequest(BaseModel):
@@ -20,9 +20,9 @@ class TaskRequest(BaseModel):
 async def run_task(request: TaskRequest):
     try:
         response = client.chat.completions.create(
-            model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+            model='gemini-2.0-flash-exp',
             messages=[
-                {'role': 'system', 'content': 'You are Groks Baby — a precise and truthful coding assistant.'},
+                {'role': 'system', 'content': 'You are Groks Baby — a precise coding assistant.'},
                 {'role': 'user', 'content': request.task}
             ],
             temperature=0.3,
