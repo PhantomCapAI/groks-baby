@@ -1,0 +1,12 @@
+﻿{
+  "version": "1",
+  "services": [
+    {
+      "name": "coding-agent",
+      "type": "web",
+      "port": 8080,
+      "env": ["GROQ_API_KEY", "GROQ_MODEL"],
+      "region": "us"
+    }
+  ]
+}
