@@ -3,7 +3,8 @@ from pydantic import BaseModel
 import os
 from coding_system import CodingSystem
 
-app = FastAPI(title="Zeabur Coding Agent")
+app = FastAPI(title="Groks Baby")
+
 coding_system = CodingSystem()
 
 class TaskRequest(BaseModel):
@@ -23,7 +24,7 @@ async def run_task(request: TaskRequest):
 
 @app.get('/health')
 async def health():
-    return {'status': 'healthy'}
+    return {'status': 'healthy', 'agent': 'Groks Baby'}
 
 if __name__ == '__main__':
     import uvicorn
