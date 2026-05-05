@@ -22,14 +22,13 @@ async def run_task(request: TaskRequest):
         response = client.chat.completions.create(
             model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
             messages=[
-                {'role': 'system', 'content': 'You are Groks Baby — a precise, no-fluff coding agent. Always respond with a git-style unified diff when changing code.'},
+                {'role': 'system', 'content': 'You are Groks Baby — precise coding agent. Respond with git-style diff for code changes.'},
                 {'role': 'user', 'content': request.task}
             ],
             temperature=0.3,
             max_tokens=2000
         )
-        result = response.choices[0].message.content.strip()
-        return {'status': 'success', 'diff': result}
+        return {'status': 'success', 'diff': response.choices[0].message.content.strip()}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
