@@ -1,11 +1,17 @@
 ﻿from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import os
-from coding_system import CodingSystem
+from dotenv import load_dotenv
+from openai import OpenAI
+
+load_dotenv()
 
 app = FastAPI(title="Groks Baby")
 
-coding_system = CodingSystem()
+client = OpenAI(
+    api_key=os.getenv('GROQ_API_KEY'),
+    base_url='https://api.groq.com/openai/v1'
+)
 
 class TaskRequest(BaseModel):
     task: str
@@ -13,12 +19,17 @@ class TaskRequest(BaseModel):
 @app.post('/run')
 async def run_task(request: TaskRequest):
     try:
-        result = coding_system.iterative_loop(request.task)
-        return {
-            'status': 'success',
-            'diff': result,
-            'iterations': len(coding_system.memory_short)
-        }
+        response = client.chat.completions.create(
+            model=os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+            messages=[
+                {'role': 'system', 'content': 'You are Groks Baby — a precise, no-fluff coding agent. Always respond with a git-style unified diff when changing code.'},
+                {'role': 'user', 'content': request.task}
+            ],
+            temperature=0.3,
+            max_tokens=2000
+        )
+        result = response.choices[0].message.content.strip()
+        return {'status': 'success', 'diff': result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
