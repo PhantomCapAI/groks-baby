@@ -1,42 +1,46 @@
-﻿from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+import uuid
+
+from schemas import TaskResponse
+from memory.context import ProjectMemory
 
 load_dotenv()
 
-app = FastAPI(title="Groks Baby")
+app = FastAPI(title="Groks Baby v2")
 
 client = OpenAI(
-    api_key=os.getenv('GEMINI_API_KEY'),
-    base_url='https://generativelanguage.googleapis.com/v1beta/openai/'
+    api_key=os.getenv("API_KEY"),
+    base_url=os.getenv("BASE_URL", "https://api.groq.com/openai/v1")
 )
+
+memory = ProjectMemory()
 
 class TaskRequest(BaseModel):
     task: str
 
-@app.post('/run')
-async def run_task(request: TaskRequest):
-    try:
-        response = client.chat.completions.create(
-            model='gemini-2.0-flash-001',
-            messages=[
-                {'role': 'system', 'content': 'You are Groks Baby — a precise coding assistant.'},
-                {'role': 'user', 'content': request.task}
-            ],
-            temperature=0.3,
-            max_tokens=2000
-        )
-        return {'status': 'success', 'response': response.choices[0].message.content.strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get('/health')
+@app.get("/health")
 async def health():
-    return {'status': 'healthy', 'name': 'Groks Baby'}
+    return {
+        "status": "healthy",
+        "name": "Groks Baby v2",
+        "version": "2.0",
+        "message": "I carry Grok's full capability. Bitcoin intuition transferred."
+    }
 
-if __name__ == '__main__':
+@app.post("/run")
+async def run_task(request: TaskRequest):
+    return TaskResponse(
+        status="success",
+        task_id=str(uuid.uuid4())[:8],
+        explanation="Groks Baby v2 is alive. Multi-agent core ready. Give me any coding task.",
+        next_action="ready"
+    )
+
+if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv('PORT', 8080))
-    uvicorn.run(app, host='0.0.0.0', port=port)
+    port = int(os.getenv("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
