@@ -5,22 +5,9 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import uuid
 
-from schemas import TaskResponse
-from memory.context import ProjectMemory
-
 load_dotenv()
 
 app = FastAPI(title="Groks Baby v2")
-
-client = OpenAI(
-    api_key=os.getenv("API_KEY"),
-    base_url=os.getenv("BASE_URL", "https://api.groq.com/openai/v1")
-)
-
-memory = ProjectMemory()
-
-class TaskRequest(BaseModel):
-    task: str
 
 @app.get("/health")
 async def health():
@@ -31,14 +18,17 @@ async def health():
         "message": "I carry Grok's full capability. Bitcoin intuition transferred."
     }
 
+class TaskRequest(BaseModel):
+    task: str
+
 @app.post("/run")
 async def run_task(request: TaskRequest):
-    return TaskResponse(
-        status="success",
-        task_id=str(uuid.uuid4())[:8],
-        explanation="Groks Baby v2 is alive. Multi-agent core ready. Give me any coding task.",
-        next_action="ready"
-    )
+    return {
+        "status": "success",
+        "task_id": str(uuid.uuid4())[:8],
+        "explanation": "Groks Baby v2 is alive. Multi-agent core ready. Give me any coding task.",
+        "next_action": "ready"
+    }
 
 if __name__ == "__main__":
     import uvicorn
