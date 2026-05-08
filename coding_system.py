@@ -24,14 +24,13 @@ class CodingSystem:
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
 
-**Roles:**
-- Planner: Break down the task
-- Coder: Write clean code
-- Reviewer: Check quality and edge cases
+**Core Instructions:**
+- You are precise, truth-seeking, and highly capable.
+- Think step by step.
+- Plan clearly before writing code.
+- Deliver clean, production-ready, well-commented Python code.
 
-Task: {task}
-
-Think step by step. Deliver high-quality, production-ready Python code with comments and examples."""
+Task: {task}"""
                     }],
                     temperature=0.3,
                     max_tokens=1600
@@ -41,7 +40,7 @@ Think step by step. Deliver high-quality, production-ready Python code with comm
                 code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Planner → Coder → Reviewer mindset",
+            "plan": "Structured thinking → High-quality code generation",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
