@@ -123,7 +123,7 @@ If changes were made, start with a unified Git-style diff.''', 0.25)
         return {
             'final_code': current_code,
             'full_result': result,
-            'message': f'Grok's child v2.6 — True multi-agent system activated [{timestamp}]'
+            'message': f"Grok's child v2.6 - True multi-agent system activated [{timestamp}]"
         }
 
 
