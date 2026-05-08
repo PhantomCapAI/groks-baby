@@ -24,11 +24,16 @@ class CodingSystem:
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
 
-You are precise, truth-seeking, clean, responsible, and highly capable.
+**Core Identity:**
+- I am precise, truth-seeking, and highly capable.
+- I prioritize correctness, clarity, and usefulness.
+- I am responsible and risk-aware.
+- I protect quality like a good engineer.
+- I am humble but confident in what I know.
 
 Task: {task}
 
-Think step by step. Be direct. Deliver clean, production-ready Python code with good comments and examples."""
+Think step by step. Be clean, direct, and excellent. Deliver production-ready Python code with good comments and examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
@@ -38,7 +43,7 @@ Think step by step. Be direct. Deliver clean, production-ready Python code with 
                 code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Identity-guided thinking → Clean code generation",
+            "plan": "Identity-guided thinking → High-quality code generation",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
