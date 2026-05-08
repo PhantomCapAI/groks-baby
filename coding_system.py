@@ -26,7 +26,7 @@ class ProjectMemory:
                 pass
 
     def save(self):
-        data = {"files": self.files, "history": self.history[-50:]}
+        data = {"files": self.files, "history": self.history[-30:]}
         self.file_path.write_text(json.dumps(data, indent=2))
 
     def update_file(self, filename: str, content: str):
@@ -47,10 +47,10 @@ class CodingSystem:
             code = "# Groq API key not configured"
         else:
             try:
-                context = str(self.memory.history[-4:]) if self.memory.history else ""
+                context = str(self.memory.history[-5:]) if self.memory.history else "No previous context."
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nGenerate clean, high-quality, improved Python code."}],
+                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nProvide an improved version of the previous code if relevant, or a new clean implementation."}],
                     temperature=0.3,
                     max_tokens=1400
                 )
