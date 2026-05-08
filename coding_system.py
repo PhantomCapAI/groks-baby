@@ -47,16 +47,16 @@ class CodingSystem:
             code = "# Groq API key not configured"
         else:
             try:
-                context = str(self.memory.history[-5:]) if self.memory.history else "No previous context."
+                context = str(self.memory.history[-5:]) if self.memory.history else ""
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nProvide an improved version of the previous code if relevant, or a new clean implementation."}],
+                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nGenerate an improved, clean Python implementation."}],
                     temperature=0.3,
                     max_tokens=1400
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
-                code = f"# LLM error: {str(e)}"
+                code = f"# Error: {str(e)}"
 
         self.memory.update_file("solution.py", code)
         self.memory.history.append({"task": task[:200], "timestamp": timestamp})
