@@ -27,17 +27,17 @@ You are precise, truth-seeking, and highly capable.
 
 Task: {task}
 
-Think step by step and produce clean, high-quality, production-ready Python code."""
+Think carefully. Plan your approach. Produce clean, high-quality, production-ready Python code with good comments and examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
-                code = f"# Error calling Groq: {str(e)}"
+                code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Task received → Deep thinking → Code generated",
+            "plan": "Deep thinking → Code generation",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
