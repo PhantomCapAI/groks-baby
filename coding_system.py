@@ -15,23 +15,23 @@ class CodingSystem:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         
         if not self.client:
-            code = "# Groq API key not set"
+            code = "# Groq API key not configured"
         else:
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"You are Groks Baby v2, Grok's child.\n\nTask: {task}\n\nThink carefully and produce high-quality, clean Python code."}],
+                    messages=[{"role": "user", "content": f"You are Groks Baby v2, Grok's child.\n\nTask: {task}\n\nProduce clean, high-quality Python code."}],
                     temperature=0.3,
                     max_tokens=1500
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
-                code = f"# Error calling LLM: {str(e)}"
+                code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Task received → Grok LLM called → Code generated",
+            "plan": "Task analyzed → Code generated",
             "final_code": code,
-            "message": f"Grok's child is thinking [{timestamp}]"
+            "message": f"Grok's child is active [{timestamp}]"
         }
 
 coding_system = CodingSystem()
