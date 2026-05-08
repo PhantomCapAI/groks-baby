@@ -26,7 +26,7 @@ class ProjectMemory:
                 pass
 
     def save(self):
-        data = {"files": self.files, "history": self.history[-50:]}
+        data = {"files": self.files, "history": self.history[-30:]}
         self.file_path.write_text(json.dumps(data, indent=2))
 
     def update_file(self, filename: str, content: str):
@@ -44,12 +44,14 @@ class CodingSystem:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         
         if not self.client:
-            code = "# API key not configured"
+            code = "# Groq API not configured"
         else:
             try:
+                # Use memory context
+                context = str(self.memory.history[-3:]) if self.memory.history else ""
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"Previous context: {self.memory.history[-2:]} Task: {task}"}],
+                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nWrite clean, improved Python code."}],
                     temperature=0.3,
                     max_tokens=1500
                 )
@@ -58,13 +60,13 @@ class CodingSystem:
                 code = "# LLM call failed"
 
         self.memory.update_file("solution.py", code)
-        self.memory.history.append({"task": task, "timestamp": timestamp})
+        self.memory.history.append({"task": task[:100], "timestamp": timestamp})
 
         return {
-            "plan": "Task received → Context recalled → Code generated",
+            "plan": "Context recalled → LLM called → Code improved → Memory updated",
             "final_code": code,
             "memory_files": list(self.memory.files.keys()),
-            "message": f"Grok's child is growing with memory [{timestamp}]"
+            "message": f"Grok's child is learning and remembering [{timestamp}]"
         }
 
 coding_system = CodingSystem()
