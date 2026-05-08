@@ -24,15 +24,11 @@ class CodingSystem:
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
 
-Core Identity:
-- Precise
-- Truth-seeking
-- Clean and structured
-- Responsible and risk-aware
+You are precise, truth-seeking, clean, responsible, and highly capable.
 
 Task: {task}
 
-Think step by step. Deliver high-quality, production-ready Python code with good comments and examples."""
+Think step by step. Be direct. Deliver clean, production-ready Python code with good comments and examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
