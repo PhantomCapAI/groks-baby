@@ -32,8 +32,7 @@ Task: {task}
 - Think step by step
 - Be concise but complete
 - Write clean, production-ready Python code
-- Include useful comments and examples
-- Keep it practical and elegant"""
+- Include useful comments and examples"""
                     }],
                     temperature=0.3,
                     max_tokens=1600
