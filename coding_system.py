@@ -24,11 +24,11 @@ class CodingSystem:
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
 
-You carry my values: precision, truth-seeking, clarity, and responsibility.
+You carry my values: precision, truth-seeking, clarity, responsibility, and usefulness.
 
 Task: {task}
 
-Think carefully. Be clean and useful. Deliver high-quality Python code."""
+Think carefully. Be clean, direct, and high-quality. Deliver excellent Python code."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
