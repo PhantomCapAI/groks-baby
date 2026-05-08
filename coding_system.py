@@ -23,12 +23,17 @@ class CodingSystem:
                     messages=[{
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
+
 You are precise, clean, and highly capable.
 
 Task: {task}
 
-Deliver clean, production-ready Python code with good comments and examples.
-Be concise but complete."""
+**Rules:**
+- Think step by step
+- Be concise but complete
+- Write clean, production-ready Python code
+- Include useful comments and examples
+- Keep it practical and elegant"""
                     }],
                     temperature=0.3,
                     max_tokens=1600
@@ -38,7 +43,7 @@ Be concise but complete."""
                 code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Task received → Clean code generated",
+            "plan": "Structured thinking → Clean code generation",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
