@@ -27,7 +27,7 @@ You are precise, truth-seeking, and highly capable.
 
 Task: {task}
 
-Think step by step. Plan your approach. Deliver clean, production-ready Python code with excellent comments and examples."""
+Think step by step. Be thorough. Deliver clean, production-ready, well-commented Python code with examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
