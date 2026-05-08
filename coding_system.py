@@ -23,11 +23,11 @@ class CodingSystem:
                     messages=[{
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
-You are a precise, truth-seeking, highly capable coding intelligence.
+You are precise, truth-seeking, and highly capable.
 
 Task: {task}
 
-Think step by step. Plan clearly. Deliver clean, production-ready Python code with good comments and examples."""
+Think step by step. Plan your approach. Deliver clean, production-ready Python code with excellent comments and examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
