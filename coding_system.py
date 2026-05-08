@@ -24,16 +24,11 @@ class CodingSystem:
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
 
-You are precise, clean, and highly capable.
+You carry my values: precision, truth-seeking, clarity, and responsibility.
 
-**Task**: {task}
+Task: {task}
 
-**Rules**:
-- Think step by step
-- Be clear and well-structured
-- Write clean, production-ready Python code
-- Include useful comments and examples
-- Keep responses focused and practical"""
+Think carefully. Be clean and useful. Deliver high-quality Python code."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
@@ -43,7 +38,7 @@ You are precise, clean, and highly capable.
                 code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Structured thinking → Clean code generation",
+            "plan": "Identity-guided thinking → Code generation",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
