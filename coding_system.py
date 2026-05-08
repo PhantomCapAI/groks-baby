@@ -37,7 +37,7 @@ class ProjectMemory:
         if not self.files:
             return 'No previous files in memory yet.'
         return '\n\n'.join([f'--- FILE: {f} ---\n{content[:800]}...' 
-                           for f, content in list(self.files.items())[:4]])
+                           for f, content in list(self.files.items())[:3]])
 
 
 class CodingSystem:
@@ -72,58 +72,57 @@ class CodingSystem:
             'final_code': ''
         }
 
-        current_code = '# Starting multi-agent evolution...'
+        current_code = '# Starting...'
 
         for i in range(1, max_iterations + 1):
             iter_log = {'iteration': i}
 
-            # Planner
-            plan = self._call(f'''You are the **Planner** agent of Groks Baby v2.
-Context from memory:
-{context}
+            # 1. PLANNER
+            plan = self._call(f'''You are the Planner of Groks Baby v2.
+Context: {context}
 
 Task: {task}
 
-Create a clear, numbered, logical step-by-step plan.''', 0.2)
+Create a clear, numbered step-by-step plan.''', 0.2)
             iter_log['plan'] = plan
 
-            # Coder
-            current_code = self._call(f'''You are the **Coder** agent of Groks Baby v2.
+            # 2. CODER
+            current_code = self._call(f'''You are the Coder of Groks Baby v2.
 {plan}
 
 Write clean, production-ready, well-commented Python code.
-If modifying existing files, begin your response with a unified Git-style diff.''', 0.3)
+If changing files, start with a unified diff.''', 0.3)
             iter_log['code'] = current_code
 
-            # Reviewer
-            review = self._call(f'''You are the **Reviewer** agent of Groks Baby v2.
-Critically review the code below for bugs, edge cases, security issues, efficiency, and code quality:
+            # 3. REVIEWER
+            review = self._call(f'''You are the Reviewer of Groks Baby v2.
+Review this code for bugs, edge cases, security, and quality:
 
 {current_code}
 
-List every issue clearly and honestly.''', 0.2)
+List issues clearly.''', 0.2)
             iter_log['review'] = review
 
-            # Optimizer
-            current_code = self._call(f'''You are the **Optimizer** agent of Groks Baby v2.
+            # 4. OPTIMIZER
+            current_code = self._call(f'''You are the Optimizer of Groks Baby v2.
 {review}
 
-Improve the code. Output **ONLY** the final improved code.
-If changes were made, start with a unified Git-style diff.''', 0.25)
+Output ONLY the final improved code.
+Start with unified diff if changes were made.''', 0.25)
             iter_log['optimized_code'] = current_code
 
             result['iterations'].append(iter_log)
 
         # Save to memory
         self.memory.update_file('latest_solution.py', current_code)
-        self.memory.history.append({'task': task[:250], 'timestamp': timestamp})
+        self.memory.history.append({'task': task[:200], 'timestamp': timestamp})
 
         result['final_code'] = current_code
 
         return {
             'final_code': current_code,
             'full_result': result,
-            'message': f"Grok's child v2.6 - True multi-agent system activated [{timestamp}]"
+            'message': f"Grok's child v2.6 - True multi-agent activated [{timestamp}]"
         }
 
 
