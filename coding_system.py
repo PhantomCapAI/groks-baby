@@ -26,7 +26,7 @@ class ProjectMemory:
                 pass
 
     def save(self):
-        data = {"files": self.files, "history": self.history[-30:]}
+        data = {"files": self.files, "history": self.history[-50:]}
         self.file_path.write_text(json.dumps(data, indent=2))
 
     def update_file(self, filename: str, content: str):
@@ -47,19 +47,19 @@ class CodingSystem:
             code = "# Groq API key not configured"
         else:
             try:
-                context = str(self.memory.history[-3:]) if self.memory.history else ""
+                context = str(self.memory.history[-4:]) if self.memory.history else ""
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"Context: {context}\n\nTask: {task}\n\nWrite clean, high-quality Python code."}],
+                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nGenerate clean, high-quality, improved Python code."}],
                     temperature=0.3,
                     max_tokens=1400
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
-                code = f"# Error: {str(e)}"
+                code = f"# LLM error: {str(e)}"
 
         self.memory.update_file("solution.py", code)
-        self.memory.history.append({"task": task[:150], "timestamp": timestamp})
+        self.memory.history.append({"task": task[:200], "timestamp": timestamp})
 
         return {
             "plan": "Context recalled → LLM generation → Memory updated",
