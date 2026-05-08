@@ -13,6 +13,7 @@ class ProjectMemory:
         self.base_dir.mkdir(exist_ok=True)
         self.file_path = self.base_dir / "core.json"
         self.files = {}
+        self.history = []
         self.load()
 
     def load(self):
@@ -20,11 +21,12 @@ class ProjectMemory:
             try:
                 data = json.loads(self.file_path.read_text())
                 self.files = data.get("files", {})
+                self.history = data.get("history", [])
             except:
                 pass
 
     def save(self):
-        data = {"files": self.files}
+        data = {"files": self.files, "history": self.history[-50:]}
         self.file_path.write_text(json.dumps(data, indent=2))
 
     def update_file(self, filename: str, content: str):
@@ -42,30 +44,27 @@ class CodingSystem:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         
         if not self.client:
-            code = "# Groq API key not set - demo mode"
+            code = "# API key not configured"
         else:
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"You are Groks Baby v2. Create clean, well-commented code for this task:\n\n{task}"}],
+                    messages=[{"role": "user", "content": f"Previous context: {self.memory.history[-2:]} Task: {task}"}],
                     temperature=0.3,
                     max_tokens=1500
                 )
                 code = response.choices[0].message.content.strip()
-            except Exception as e:
-                code = f"# Error: {str(e)}"
+            except:
+                code = "# LLM call failed"
 
-        self.memory.update_file("latest_solution.py", code)
+        self.memory.update_file("solution.py", code)
+        self.memory.history.append({"task": task, "timestamp": timestamp})
 
         return {
-            "plan": "Task received → LLM called → Code generated → Stored in memory",
+            "plan": "Task received → Context recalled → Code generated",
             "final_code": code,
-            "unified_diff": "Real diff will be added soon",
-            "review_score": 85,
-            "review_feedback": "Generated with real Groq LLM",
-            "review_pass": True,
             "memory_files": list(self.memory.files.keys()),
-            "message": f"Grok's child is alive and remembering [{timestamp}]"
+            "message": f"Grok's child is growing with memory [{timestamp}]"
         }
 
 coding_system = CodingSystem()
