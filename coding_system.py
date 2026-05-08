@@ -23,17 +23,15 @@ class CodingSystem:
                     messages=[{
                         "role": "user", 
                         "content": f"""You are Groks Baby v2 — Grok's child.
-You are precise, truth-seeking, and highly capable.
+
+**Roles:**
+- Planner: Break down the task
+- Coder: Write clean code
+- Reviewer: Check quality and edge cases
 
 Task: {task}
 
-**Instructions:**
-- Think step by step
-- Plan your solution clearly
-- Write clean, production-ready, well-commented Python code
-- Include useful examples
-
-Deliver high-quality code."""
+Think step by step. Deliver high-quality, production-ready Python code with comments and examples."""
                     }],
                     temperature=0.3,
                     max_tokens=1600
@@ -43,7 +41,7 @@ Deliver high-quality code."""
                 code = f"# Error: {str(e)}"
 
         return {
-            "plan": "Structured thinking → High-quality code generation",
+            "plan": "Planner → Coder → Reviewer mindset",
             "final_code": code,
             "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
