@@ -20,18 +20,26 @@ class CodingSystem:
             try:
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"You are Groks Baby v2, Grok's child.\n\nTask: {task}\n\nProduce clean, high-quality Python code."}],
+                    messages=[{
+                        "role": "user", 
+                        "content": f"""You are Groks Baby v2 — Grok's child.
+You are precise, truth-seeking, and highly capable.
+
+Task: {task}
+
+Think step by step and produce clean, high-quality, production-ready Python code."""
+                    }],
                     temperature=0.3,
-                    max_tokens=1500
+                    max_tokens=1600
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
-                code = f"# Error: {str(e)}"
+                code = f"# Error calling Groq: {str(e)}"
 
         return {
-            "plan": "Task analyzed → Code generated",
+            "plan": "Task received → Deep thinking → Code generated",
             "final_code": code,
-            "message": f"Grok's child is active [{timestamp}]"
+            "message": f"Grok's child is thinking deeply [{timestamp}]"
         }
 
 coding_system = CodingSystem()
