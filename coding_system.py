@@ -27,11 +27,11 @@ You are precise, truth-seeking, and highly capable.
 
 Task: {task}
 
-**Think step by step:**
-1. Understand the requirement clearly
-2. Plan the best approach
-3. Write clean, production-ready, well-commented Python code
-4. Include useful examples
+**Instructions:**
+- Think step by step
+- Plan your solution clearly
+- Write clean, production-ready, well-commented Python code
+- Include useful examples
 
 Deliver high-quality code."""
                     }],
