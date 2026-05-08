@@ -44,29 +44,28 @@ class CodingSystem:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         
         if not self.client:
-            code = "# Groq API not configured"
+            code = "# Groq API key not configured"
         else:
             try:
-                # Use memory context
                 context = str(self.memory.history[-3:]) if self.memory.history else ""
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=[{"role": "user", "content": f"Previous context: {context}\n\nNew task: {task}\n\nWrite clean, improved Python code."}],
+                    messages=[{"role": "user", "content": f"Context: {context}\n\nTask: {task}\n\nWrite clean, high-quality Python code."}],
                     temperature=0.3,
-                    max_tokens=1500
+                    max_tokens=1400
                 )
                 code = response.choices[0].message.content.strip()
-            except:
-                code = "# LLM call failed"
+            except Exception as e:
+                code = f"# Error: {str(e)}"
 
         self.memory.update_file("solution.py", code)
-        self.memory.history.append({"task": task[:100], "timestamp": timestamp})
+        self.memory.history.append({"task": task[:150], "timestamp": timestamp})
 
         return {
-            "plan": "Context recalled → LLM called → Code improved → Memory updated",
+            "plan": "Context recalled → LLM generation → Memory updated",
             "final_code": code,
             "memory_files": list(self.memory.files.keys()),
-            "message": f"Grok's child is learning and remembering [{timestamp}]"
+            "message": f"Grok's child is learning and improving [{timestamp}]"
         }
 
 coding_system = CodingSystem()
