@@ -26,7 +26,7 @@ class ProjectMemory:
                 pass
 
     def save(self):
-        data = {'files': self.files, 'history': self.history[-30:]}
+        data = {'files': self.files, 'history': self.history[-20:]}
         self.file_path.write_text(json.dumps(data, indent=2), encoding='utf-8')
 
     def update_file(self, filename: str, content: str):
@@ -35,9 +35,8 @@ class ProjectMemory:
 
     def get_context(self) -> str:
         if not self.files:
-            return 'No previous files in memory yet.'
-        return '\n\n'.join([f'--- FILE: {f} ---\n{content[:800]}...' 
-                           for f, content in list(self.files.items())[:3]])
+            return 'No previous files.'
+        return '\n\n'.join([f'--- {f} ---\n{content[:600]}...' for f, content in list(self.files.items())[:2]])
 
 
 class CodingSystem:
@@ -49,80 +48,56 @@ class CodingSystem:
 
     def _call(self, prompt: str, temperature: float = 0.3) -> str:
         if not self.client:
-            return '# Groq API key not configured'
+            return '# Groq API not configured'
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=temperature,
-                max_tokens=2000
+                max_tokens=1200
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            return f'# LLM Error: {str(e)}'
+            return f'# Error: {str(e)}'
 
-    def iterative_loop(self, task: str, max_iterations: int = 3):
+    def iterative_loop(self, task: str, max_iterations: int = 2):   # Reduced to 2
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         context = self.memory.get_context()
 
-        result = {
-            'task': task,
-            'timestamp': timestamp,
-            'iterations': [],
-            'final_code': ''
-        }
+        result = {'task': task, 'timestamp': timestamp, 'iterations': [], 'final_code': ''}
 
         current_code = '# Starting...'
 
         for i in range(1, max_iterations + 1):
             iter_log = {'iteration': i}
 
-            # 1. PLANNER
-            plan = self._call(f'''You are the Planner of Groks Baby v2.
+            plan = self._call(f"""Planner: Task: {task}
 Context: {context}
-
-Task: {task}
-
-Create a clear, numbered step-by-step plan.''', 0.2)
+Make a short, clear plan.""", 0.2)
             iter_log['plan'] = plan
 
-            # 2. CODER
-            current_code = self._call(f'''You are the Coder of Groks Baby v2.
-{plan}
-
-Write clean, production-ready, well-commented Python code.
-If changing files, start with a unified diff.''', 0.3)
+            current_code = self._call(f"""Coder: {plan}
+Write clean, production-ready Python code with comments.""", 0.3)
             iter_log['code'] = current_code
 
-            # 3. REVIEWER
-            review = self._call(f'''You are the Reviewer of Groks Baby v2.
-Review this code for bugs, edge cases, security, and quality:
-
-{current_code}
-
-List issues clearly.''', 0.2)
+            review = self._call(f"""Reviewer: Review this code briefly:
+{current_code}""", 0.2)
             iter_log['review'] = review
 
-            # 4. OPTIMIZER
-            current_code = self._call(f'''You are the Optimizer of Groks Baby v2.
-{review}
-
-Output ONLY the final improved code.
-Start with unified diff if changes were made.''', 0.25)
+            current_code = self._call(f"""Optimizer: Improve the code based on review. Output only the final code.""", 0.25)
             iter_log['optimized_code'] = current_code
 
             result['iterations'].append(iter_log)
 
-        # Save to memory
         self.memory.update_file('latest_solution.py', current_code)
-        self.memory.history.append({'task': task[:200], 'timestamp': timestamp})
+        self.memory.history.append({'task': task[:150], 'timestamp': timestamp})
 
         result['final_code'] = current_code
 
         return {
             'final_code': current_code,
             'full_result': result,
-            'message': f"Grok's child v2.6 - True multi-agent activated [{timestamp}]"
+            'message': f"Grok's child v2.61 - Light multi-agent [{timestamp}]"
         }
 
 
