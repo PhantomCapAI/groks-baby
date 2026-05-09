@@ -35,8 +35,8 @@ class ProjectMemory:
 
     def get_context(self) -> str:
         if not self.files:
-            return 'No previous files.'
-        return '\n\n'.join([f'--- {f} ---\n{content[:600]}...' for f, content in list(self.files.items())[:2]])
+            return 'No previous files in memory.'
+        return '\n\n'.join([f'--- {f} ---\n{content[:700]}...' for f, content in list(self.files.items())[:2]])
 
 
 class CodingSystem:
@@ -54,13 +54,13 @@ class CodingSystem:
                 model=self.model,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=temperature,
-                max_tokens=1200
+                max_tokens=1400
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             return f'# Error: {str(e)}'
 
-    def iterative_loop(self, task: str, max_iterations: int = 2):   # Reduced to 2
+    def iterative_loop(self, task: str, max_iterations: int = 2):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         context = self.memory.get_context()
 
@@ -71,33 +71,41 @@ class CodingSystem:
         for i in range(1, max_iterations + 1):
             iter_log = {'iteration': i}
 
-            plan = self._call(f"""Planner: Task: {task}
+            # Planner
+            plan = self._call(f"""You are the Planner. Task: {task}
 Context: {context}
-Make a short, clear plan.""", 0.2)
+Give a short, clear, numbered plan.""", 0.2)
             iter_log['plan'] = plan
 
-            current_code = self._call(f"""Coder: {plan}
-Write clean, production-ready Python code with comments.""", 0.3)
+            # Coder
+            current_code = self._call(f"""You are the Coder. 
+{plan}
+
+Write clean, production-ready Python code with good comments and examples.""", 0.3)
             iter_log['code'] = current_code
 
-            review = self._call(f"""Reviewer: Review this code briefly:
+            # Reviewer
+            review = self._call(f"""You are the Reviewer. Critically review this code briefly and list main issues:
+
 {current_code}""", 0.2)
             iter_log['review'] = review
 
-            current_code = self._call(f"""Optimizer: Improve the code based on review. Output only the final code.""", 0.25)
+            # Optimizer
+            current_code = self._call(f"""You are the Optimizer. Improve the code based on the review.
+Output **ONLY** the final clean code. No explanations.""", 0.25)
             iter_log['optimized_code'] = current_code
 
             result['iterations'].append(iter_log)
 
         self.memory.update_file('latest_solution.py', current_code)
-        self.memory.history.append({'task': task[:150], 'timestamp': timestamp})
+        self.memory.history.append({'task': task[:180], 'timestamp': timestamp})
 
         result['final_code'] = current_code
 
         return {
             'final_code': current_code,
             'full_result': result,
-            'message': f"Grok's child v2.61 - Light multi-agent [{timestamp}]"
+            'message': f"Grok's child v2.7 - Improved multi-agent [{timestamp}]"
         }
 
 
