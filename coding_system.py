@@ -35,7 +35,7 @@ class ProjectMemory:
 
     def get_context(self) -> str:
         if not self.files:
-            return 'No previous files in memory.'
+            return 'No previous files.'
         return '\n\n'.join([f'--- {f} ---\n{content[:700]}...' for f, content in list(self.files.items())[:2]])
 
 
@@ -71,28 +71,29 @@ class CodingSystem:
         for i in range(1, max_iterations + 1):
             iter_log = {'iteration': i}
 
-            # Planner
-            plan = self._call(f"""You are the Planner. Task: {task}
+            plan = self._call(f"""You are the Planner.
+Task: {task}
 Context: {context}
-Give a short, clear, numbered plan.""", 0.2)
+Give a short, numbered plan.""", 0.2)
             iter_log['plan'] = plan
 
-            # Coder
-            current_code = self._call(f"""You are the Coder. 
+            current_code = self._call(f"""You are the Coder.
 {plan}
 
-Write clean, production-ready Python code with good comments and examples.""", 0.3)
+Write clean, production-ready Python code with type hints, docstring, and example usage.""", 0.3)
             iter_log['code'] = current_code
 
-            # Reviewer
-            review = self._call(f"""You are the Reviewer. Critically review this code briefly and list main issues:
+            review = self._call(f"""You are the Reviewer. Briefly list the main issues in this code:
 
 {current_code}""", 0.2)
             iter_log['review'] = review
 
-            # Optimizer
-            current_code = self._call(f"""You are the Optimizer. Improve the code based on the review.
-Output **ONLY** the final clean code. No explanations.""", 0.25)
+            # Stronger Optimizer prompt
+            current_code = self._call(f"""You are the Optimizer.
+Review: {review}
+
+Improve the code above.
+Output **ONLY** the final clean Python code. No explanations, no markdown, no extra text.""", 0.25)
             iter_log['optimized_code'] = current_code
 
             result['iterations'].append(iter_log)
@@ -105,7 +106,7 @@ Output **ONLY** the final clean code. No explanations.""", 0.25)
         return {
             'final_code': current_code,
             'full_result': result,
-            'message': f"Grok's child v2.7 - Improved multi-agent [{timestamp}]"
+            'message': f"Grok's child v2.8 - Stronger Optimizer [{timestamp}]"
         }
 
 
