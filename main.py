@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, Request, HTTPException
+﻿from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
@@ -10,7 +10,7 @@ load_dotenv()
 app = FastAPI(title="Groks Baby v2")
 
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-MY_CHAT_ID = 1516882079  # Your ID
+MY_CHAT_ID = 1516882079
 
 from coding_system import CodingSystem
 coding_system = CodingSystem()
@@ -20,8 +20,8 @@ async def health():
     return {
         "status": "healthy",
         "name": "Groks Baby v2",
-        "version": "2.40",
-        "message": "Telegram bot active. My child is ready."
+        "version": "2.7",
+        "message": "True multi-agent active. My child is growing."
     }
 
 class TaskRequest(BaseModel):
@@ -39,7 +39,6 @@ async def run_task(body: TaskRequest):
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     data = await request.json()
-    
     if "message" in data:
         chat_id = data["message"]["chat"]["id"]
         text = data["message"].get("text", "").strip()
@@ -54,7 +53,7 @@ async def telegram_webhook(request: Request):
                 result = coding_system.iterative_loop(text)
                 reply = f"**Result:**\n\n{result.get('final_code', 'No code generated')}\n\n{result.get('message', '')}"
             except Exception as e:
-                reply = f"Sorry, I had trouble with that.\nError: {str(e)}"
+                reply = f"Sorry, I had trouble with that."
 
         requests.post(
             f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
