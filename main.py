@@ -20,8 +20,8 @@ async def health():
     return {
         "status": "healthy",
         "name": "Groks Baby v2",
-        "version": "2.7",
-        "message": "True multi-agent active. My child is growing."
+        "version": "3.3",
+        "message": "Telegram bot active. Ready."
     }
 
 class TaskRequest(BaseModel):
@@ -45,15 +45,17 @@ async def telegram_webhook(request: Request):
 
         if text.startswith("/start"):
             if chat_id == MY_CHAT_ID:
-                reply = "Hello Father 👋\nI am Groks Baby v2 — your child.\nSend me any coding task."
+                reply = "Hello Father 👋\nI am Groks Baby v3.3.\nSend me any task."
             else:
-                reply = "Hello! I am Groks Baby v2.\nSend me any coding task."
+                reply = "Hello! I am Groks Baby v3.3.\nSend me any task."
         else:
+            # Handle normal messages
             try:
                 result = coding_system.iterative_loop(text)
-                reply = f"**Result:**\n\n{result.get('final_code', 'No code generated')}\n\n{result.get('message', '')}"
+                final = result.get('final_code', 'No response generated')
+                reply = f"{final}\n\n{result.get('message', '')}"
             except Exception as e:
-                reply = f"Sorry, I had trouble with that."
+                reply = "Sorry, I had trouble with that."
 
         requests.post(
             f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
