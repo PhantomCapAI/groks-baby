@@ -35,8 +35,8 @@ class ProjectMemory:
 
     def get_context(self) -> str:
         if not self.files:
-            return 'No previous code.'
-        return '\n\n'.join([f'=== PREVIOUS FILE: {f} ===\n{content[:850]}...' 
+            return 'No previous code in memory.'
+        return '\n\n'.join([f'=== PREVIOUS CODE ({f}) ===\n{content[:900]}...' 
                            for f, content in list(self.files.items())[:3]])
 
 
@@ -59,7 +59,7 @@ class CodingSystem:
                     model=self.model,
                     messages=[{
                         "role": "user", 
-                        "content": f"""You are Groks Baby v3.3.
+                        "content": f"""You are Groks Baby v3.4.
 
 Precise, truth-seeking, clean, and highly capable.
 
@@ -68,11 +68,11 @@ Previous code in memory:
 
 Task: {task}
 
-Think carefully. If modifying existing code, start with a unified diff.
-Deliver clean, production-ready Python code with type hints, comments, and examples."""
+Think step by step. If modifying previous code, start with a unified diff.
+Output clean, production-ready Python code with type hints and comments."""
                     }],
                     temperature=0.3,
-                    max_tokens=1300
+                    max_tokens=1400
                 )
                 code = response.choices[0].message.content.strip()
             except Exception as e:
@@ -82,7 +82,7 @@ Deliver clean, production-ready Python code with type hints, comments, and examp
 
         return {
             'final_code': code,
-            'message': f"Grok's Baby v3.3 - Stronger memory & consistency [{timestamp}]"
+            'message': f"Grok's Baby v3.4 - Stronger memory [{timestamp}]"
         }
 
 
