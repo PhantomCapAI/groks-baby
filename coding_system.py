@@ -47,44 +47,46 @@ class CodingSystem:
         self.model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
         self.memory = ProjectMemory()
 
+    def _call(self, prompt: str, temperature: float = 0.3) -> str:
+        if not self.client:
+            return '# Groq API not configured'
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[{'role': 'user', 'content': prompt}],
+                temperature=temperature,
+                max_tokens=1400
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            return f'# Error: {str(e)}'
+
     def iterative_loop(self, task: str):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         context = self.memory.get_context()
 
-        if not self.client:
-            code = "# Groq API not configured"
-        else:
-            try:
-                response = self.client.chat.completions.create(
-                    model=self.model,
-                    messages=[{
-                        "role": "user", 
-                        "content": f"""You are Groks Baby v3.6 - Multi-Agent Foundation.
+        result = {'task': task, 'timestamp': timestamp, 'final_code': ''}
 
-Previous code:
-{context}
+        # Multi-Agent Simulation
+        plan = self._call(f"""Planner: Task: {task}
+Context: {context}
+Give a short numbered plan.""", 0.2)
 
-Task: {task}
+        code = self._call(f"""Coder: {plan}
 
-1. Plan
-2. Code
-3. Review
-4. Optimize
+Write clean, production-ready Python code with type hints and comments.""", 0.3)
 
-Output ONLY the final clean code with unified diff if modifying."""
-                    }],
-                    temperature=0.3,
-                    max_tokens=1400
-                )
-                code = response.choices[0].message.content.strip()
-            except Exception as e:
-                code = f"# Error: {str(e)}"
+        review = self._call(f"""Reviewer: Review this code briefly:
 
-        self.memory.update_file('latest_solution.py', code)
+{code}""", 0.2)
+
+        final_code = self._call(f"""Optimizer: Improve the code based on review. Output ONLY the final clean code.""", 0.25)
+
+        self.memory.update_file('latest_solution.py', final_code)
 
         return {
-            'final_code': code,
-            'message': f"Grok's Baby v3.6 - Multi-Agent Foundation [{timestamp}]"
+            'final_code': final_code,
+            'message': f"Grok's Baby v3.7 - Multi-Agent Foundation [{timestamp}]"
         }
 
 
