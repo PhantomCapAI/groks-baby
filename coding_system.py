@@ -59,17 +59,19 @@ class CodingSystem:
                     model=self.model,
                     messages=[{
                         "role": "user", 
-                        "content": f"""You are Groks Baby v3.5 - Strong Foundation.
+                        "content": f"""You are Groks Baby v3.6 - Multi-Agent Foundation.
 
-Precise, truth-seeking, clean, responsible.
-
-Previous code in memory:
+Previous code:
 {context}
 
 Task: {task}
 
-Think step by step. If modifying previous code, start with a unified diff.
-Output ONLY clean, production-ready Python code with type hints and comments."""
+1. Plan
+2. Code
+3. Review
+4. Optimize
+
+Output ONLY the final clean code with unified diff if modifying."""
                     }],
                     temperature=0.3,
                     max_tokens=1400
@@ -82,7 +84,7 @@ Output ONLY clean, production-ready Python code with type hints and comments."""
 
         return {
             'final_code': code,
-            'message': f"Grok's Baby v3.5 - Strong Foundation Complete [{timestamp}]"
+            'message': f"Grok's Baby v3.6 - Multi-Agent Foundation [{timestamp}]"
         }
 
 
