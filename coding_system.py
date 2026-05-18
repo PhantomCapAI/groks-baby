@@ -1,19 +1,34 @@
 ﻿import os
 import json
 from pathlib import Path
+from dataclasses import dataclass
+from typing import Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import OpenAI
 from datetime import datetime
 
 load_dotenv()
 
+
+@dataclass
+class AgentMessage:
+    """Structured message for agent handoffs."""
+    role: str
+    content: str
+    metadata: Dict[str, Any] = None
+
+    def __post_init__(self):
+        if self.metadata is None:
+            self.metadata = {}
+
+
 class ProjectMemory:
     def __init__(self):
         self.base_dir = Path('project_memory')
         self.base_dir.mkdir(exist_ok=True)
         self.file_path = self.base_dir / 'core.json'
-        self.files = {}
-        self.history = []
+        self.files: Dict[str, str] = {}
+        self.history: list = []
         self.load()
 
     def load(self):
@@ -26,69 +41,124 @@ class ProjectMemory:
                 pass
 
     def save(self):
-        data = {'files': self.files, 'history': self.history[-20:]}
+        data = {
+            'files': self.files,
+            'history': self.history[-30:]
+        }
         self.file_path.write_text(json.dumps(data, indent=2), encoding='utf-8')
 
-    def update_file(self, filename: str, content: str):
+    def update_file(self, filename: str, content: str, agent: str = "system"):
         self.files[filename] = content
+        self.history.append({
+            "timestamp": datetime.now().isoformat(),
+            "agent": agent,
+            "file": filename
+        })
         self.save()
 
     def get_context(self) -> str:
         if not self.files:
-            return 'No previous code.'
-        return '\n\n'.join([f'=== PREVIOUS CODE ({f}) ===\n{content[:950]}...' 
-                           for f, content in list(self.files.items())[:3]])
+            return "No previous code or context available."
+        recent = list(self.files.items())[:4]
+        return '\n\n'.join([f'=== {fname} (from {agent}) ===\n{content[:800]}...'
+                            for fname, content in recent])
 
 
 class CodingSystem:
     def __init__(self):
         api_key = os.getenv('GROQ_API_KEY')
-        self.client = OpenAI(api_key=api_key, base_url='https://api.groq.com/openai/v1') if api_key else None
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url='https://api.groq.com/openai/v1'
+        ) if api_key else None
         self.model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
         self.memory = ProjectMemory()
 
-    def _call(self, prompt: str, temperature: float = 0.3) -> str:
+    def _call(self, prompt: str, temperature: float = 0.3, max_tokens: int = 1400) -> str:
         if not self.client:
-            return '# Groq API not configured'
+            return "# Groq API not configured"
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[{'role': 'user', 'content': prompt}],
+                messages=[{"role": "user", "content": prompt}],
                 temperature=temperature,
-                max_tokens=1400
+                max_tokens=max_tokens
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
-            return f'# Error: {str(e)}'
+            return f"# Error: {str(e)}"
 
     def iterative_loop(self, task: str):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
         context = self.memory.get_context()
 
-        # Multi-Agent Loop
-        plan = self._call(f"""Planner: 
+        # === PLANNER ===
+        plan_prompt = f"""You are the Planner agent.
 Task: {task}
-Context: {context}
-Give a short, clear numbered plan.""", 0.2)
 
-        code = self._call(f"""Coder:
-{plan}
+Context:
+{context}
 
-Write clean, production-ready Python code with type hints and comments.""", 0.3)
+Output ONLY a short, numbered plan (maximum 6 steps). Be precise."""
+        plan_raw = self._call(plan_prompt, temperature=0.2)
+        self.memory.update_file('plan.txt', plan_raw, "Planner")
 
-        review = self._call(f"""Reviewer:
-Review this code and list any issues:
-{code}""", 0.2)
+        # === CODER ===
+        code_prompt = f"""You are the Coder agent.
+Follow this plan exactly:
+{plan_raw}
 
-        final_code = self._call(f"""Optimizer:
-{review}
-Output ONLY the final clean, improved code. No explanations.""", 0.25)
+Write clean, production-ready Python code.
+Use type hints, comprehensive docstrings, and include example usage.
+Output ONLY the code block."""
+        code_raw = self._call(code_prompt, temperature=0.3)
+        self.memory.update_file('raw_code.py', code_raw, "Coder")
 
-        self.memory.update_file('latest_solution.py', final_code)
+        # === REVIEWER ===
+        review_prompt = f"""You are the Reviewer agent.
+Review this code for:
+- Correctness
+- Adherence to Core Values (clean, safe, production-ready)
+- Type hints and documentation
+- Potential bugs or improvements
+
+Code:
+{code_raw}
+
+Respond in strict JSON:
+{{"approved": true/false, "issues": ["list of issues"], "suggestions": "text"}}"""
+        review_raw = self._call(review_prompt, temperature=0.2)
+        self.memory.update_file('review.json', review_raw, "Reviewer")
+
+        # Parse review
+        try:
+            review_data = json.loads(review_raw.strip("`json").strip("`").strip())
+            approved = review_data.get("approved", False)
+        except:
+            approved = False
+            review_data = {"approved": False, "issues": ["Failed to parse review"], "suggestions": ""}
+
+        # === OPTIMIZER / FINAL ===
+        if approved:
+            final_prompt = f"""You are the Optimizer agent.
+Improve and polish the code based on review.
+Output ONLY the final clean code. No explanations.
+
+Code to improve:
+{code_raw}
+
+Review notes:
+{review_data}"""
+            final_code = self._call(final_prompt, temperature=0.25)
+        else:
+            final_code = f"# Reviewer did not approve.\n# Issues: {review_data.get('issues', [])}\n\n{code_raw}"
+
+        self.memory.update_file('final_solution.py', final_code, "Optimizer")
 
         return {
             'final_code': final_code,
-            'message': f"Grok's Baby v3.6 - Multi-Agent Foundation [{timestamp}]"
+            'message': f"Grok's Baby v3.6.1 - Structured Multi-Agent [{timestamp}]",
+            'review_approved': approved
         }
 
 
